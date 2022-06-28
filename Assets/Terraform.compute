@@ -1,0 +1,26 @@
+#pragma kernel Terraform
+
+static const int numThreads = 8;
+
+RWStructuredBuffer<float> offsets;
+int numPointsPerAxis;
+float boundsSize;
+int3 brushCentre;
+float spacing;
+
+[numthreads(numThreads,numThreads,numThreads)]
+void Terraform (uint3 id : SV_DispatchThreadID)
+{
+    int brushRadius = 3;
+    if (id.x >= numPointsPerAxis || id.y >= numPointsPerAxis || id.z >= numPointsPerAxis) {
+        return;
+    }
+    int3 offset = id - brushCentre;
+    int sqrDst = dot(offset, offset);
+    if(sqrDst <= brushRadius * brushRadius) {
+        
+        int index = id.z * numPointsPerAxis * numPointsPerAxis + id.y * numPointsPerAxis + id.x;
+        float value = float(offsets[index]) + .1;
+        offsets[index] = value;
+    }
+}
